@@ -157,3 +157,7 @@ login(credential, (err, api) => {
 app.listen(port, () => {
     console.log(`App started at ${port}`);
 });
+
+app.get('*', (req, res) => {
+    res.send('This is chatbot.');
+})
