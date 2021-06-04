@@ -1,3 +1,7 @@
+const express = require('express');
+const app = express();
+const port = process.env.PORT || 8080;
+
 const login = require("facebook-chat-api");
 const fs = require('fs');
 const credential = { appState: JSON.parse(fs.readFileSync('./cookies.json', 'utf-8')) }
@@ -148,4 +152,8 @@ login(credential, (err, api) => {
                 break;
         }
     });
+});
+
+app.listen(port, () => {
+    console.log(`App started at ${port}`);
 });
