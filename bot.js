@@ -68,6 +68,9 @@ const startCronJobSendMessage = (api, threadID, hour, minutes) => {
 
 let notifySetup = false;
 
+app.listen(port, () => {
+    console.log(`App started at ${port}`);
+});
 
 login(credential, (err, api) => {
     if(err) return console.error(err);
@@ -155,95 +158,11 @@ login(credential, (err, api) => {
     });
 });
 
-app.listen(port, () => {
-    console.log(`App started at ${port}`);
-});
-
 app.get('*', (req, res) => {
-    login(credential, (err, api) => {
-        if(err) return console.error(err);
-        api.setOptions({listenEvents: true});
-        api.listenMqtt(async (err, event) => {
-            if(err) return console.error(err);
-            switch(event.type) {
-                case 'message':
-                    if(!event.body || !event.body.includes('/bot')) {
-                        return;
-                    }
-                    api.markAsRead(event.threadID, (err) => {
-                        if(err) console.log(err);
-                    });
-                    console.log(event);
-                    let answer = '';
-                    const question = event.body.toLowerCase();
-                    if(question.includes('rác') || question.includes('rac')) {
-                        api.sendMessage('Oke. Đang kiểm tra lịch đổ rác...', event.threadID);
-                        answer = await plans.getPlan();
-                    } else if(
-                        question.includes('ok') || 
-                        question.includes('oke') || 
-                        question.includes('cảm') || 
-                        question.includes('cảm ơn') ||
-                        question.includes('thanks') ||
-                        question.includes('thank you')
-                    ) {
-                        answer = 'Oke. Không có gì.';
-                    } else if(question.includes('helpadvance')) {
-                        answer += 'Chat bot tự động trả lời. Đây là các lệnh mà tôi hỗ trợ nâng cao: cài đặt thông báo, update plans, reset plans.';
-                    } else if(question.includes('help')) {
-                        answer += '----- Room 1c ----- \n';
-                        answer += 'Chat bot tự động trả lời. Đây là các lệnh mà tôi hỗ trợ: \n';
-                        answer += '+ rác hoặc rac: Tôi sẽ trả lời cho bạn hôm nay ai đổ rác. \n';
-                        answer += '+ thời tiết(hoặc thoi tiet) + tên thành phố(không dấu): Tôi sẽ trả lời cho bạn thời tiết hôm nay của thành phố bạn chọn. Nếu không nhập tên, mặc định sẽ lấy TPHCM. \n';
-                        answer += '+ sleep hoặc sleepy: Tôi sẽ dựa vào chu kì giấc ngủ để khuyên bạn nên tỉnh giấc vào thời gian nào mà bạn sẽ cảm thấy tỉnh táo và minh mẫn.\n';
-                    } else if(question.includes('sleep') || question.includes('sleepy')) {
-                        answer = getTimeSleepCycle();
-                    } else if(question.includes('update plans')) {
-                        api.sendMessage('Oke. Đang tiến hành cập nhật lại kế hoạch đổ rác.', event.threadID);
-                        await calc.init();
-                        answer = 'Cập nhật lịch đổ rác thành công. Xem lịch đổ rác của tháng mới ở https://room1c.herokuapp.com/management';
-                    } else if(question.includes('reset plans')) {
-                        api.sendMessage('Oke. Đang tiến hành cập nhật lại kế hoạch đổ rác.', event.threadID);
-                        await calc.init();
-                        answer = 'Cập nhật lịch đổ rác thành công. Xem lịch đổ rác của tháng mới ở https://room1c.herokuapp.com/management';
-                    } else if(question.includes('cài đặt thông báo')) {
-                        api.sendMessage('Xác nhận cài đặt thông báo. Nhập giờ với cú pháp /bot cài đặt giờ hh:mm', event.threadID);
-                        notifySetup = true;
-                    } else if(question.includes('cài đặt giờ') && notifySetup) {
-                        let timePlan = question.split(' ');
-                        let time = timePlan[timePlan.length - 1];
-                        let timeSplit = time.split(':');
-                        answer = startCronJobSendMessage(api, event.threadID, timeSplit[0], timeSplit[1]);
-                    } else if(question.includes('hôm nay thời tiết') ||  
-                            question.includes('thời tiết hôm nay') || 
-                            question.includes('thoi tiet hom nay') ||
-                            question.includes('thời tiết hôm nay thế nào') ||
-                            question.includes('thoi tiet hom nay the nao') || 
-                            question.includes('hôm nay thời tiết như thế nào') ||
-                            question.includes('hom nay thoi tiet nhu the nao')
-                        ) {
-                        answer = await weather.getWeather('Ho Chi Minh');
-                    } else if(question.includes('thời tiết') || question.includes('thoi tiet')) {
-                        let city = question.replace('/bot thoi tiet','');
-                        city = city.replace('/bot thời tiết','');
-                        if(city === '') {
-                            answer = await weather.getWeather('Ho Chi Minh');
-                        } else {
-                            answer = await weather.getWeather(city.trim());
-                        }
-                    } else if(question.includes('phòng ai hiền nhất')) {
-                        answer = 'A Sơn chứ ai.';
-                    }
-                    else {
-                        answer = 'Không hiểu câu lệnh. Sử dụng /bot help để xem lệnh bot có thể hỗ trợ.';
-                    }
-                    api.sendMessage(answer, event.threadID);
-                    break;
-                case 'event':
-                    console.log(event);
-                    break;
-            }
-        });
-    });
     res.send('This is chatbot.');
 })
+
+var http = require("http");
+setInterval(function() {
+    http.get("http://chatbot1croom.herokuapp.com");
+}, 300000); // every 5 minutes (300000)
