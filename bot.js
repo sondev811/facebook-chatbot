@@ -13,14 +13,16 @@ const Weather = require('./weather');
 let weather = new Weather();
 const cron = require('node-cron');
 
-const date = new Date();
+
 
 const calcSleepCycle = (cycle) => {
+    const date = new Date();
     const timeInSecs = date.getTime();
     return new Date(timeInSecs + (cycle * 90 + 14) * 60 * 1000);
 };
 
 const getTimeSleepCycle = () => {
+    const date = new Date();
     let message = `Bây giờ là ${date.getHours()}:${date.getMinutes()} ${formatAMPM(date)}. Nếu bạn đi ngủ ngay bây giờ, bạn nên cố gắng thức dậy vào một trong những thời điểm sau: `;
     for(let i = 1; i <= 5; i++) {
         let time = calcSleepCycle(i); 
@@ -90,7 +92,13 @@ login(credential, (err, api) => {
                 const question = event.body.toLowerCase();
                 if(question.includes('rác') || question.includes('rac')) {
                     api.sendMessage('Oke. Đang kiểm tra lịch đổ rác...', event.threadID);
-                    answer = await plans.getPlan();
+                    if(question.includes('mai')) {
+                        answer = await plans.getPlan('tomorrow');
+                    } else if(question.includes('qua')) {
+                        answer = await plans.getPlan('yesterday');
+                    } else if(question.includes('nay')){
+                        answer = await plans.getPlan('today');
+                    }
                 } else if(
                     question.includes('ok') || 
                     question.includes('oke') || 
@@ -106,7 +114,7 @@ login(credential, (err, api) => {
                     answer += '----- Room 1c ----- \n';
                     answer += 'Chat bot tự động trả lời. Đây là các lệnh mà tôi hỗ trợ: \n';
                     answer += '+ rác hoặc rac: Tôi sẽ trả lời cho bạn hôm nay ai đổ rác. \n';
-                    answer += '+ thời tiết(hoặc thoi tiet) + tên thành phố(không dấu): Tôi sẽ trả lời cho bạn thời tiết hôm nay của thành phố bạn chọn. Nếu không nhập tên, mặc định sẽ lấy TPHCM. \n';
+                    answer += '+ xem thời tiết(hoặc xem thoi tiet) + tên thành phố(không dấu): Tôi sẽ trả lời cho bạn thời tiết hôm nay của thành phố bạn chọn. Nếu không nhập tên, mặc định sẽ lấy TPHCM. \n';
                     answer += '+ sleep hoặc sleepy: Tôi sẽ dựa vào chu kì giấc ngủ để khuyên bạn nên tỉnh giấc vào thời gian nào mà bạn sẽ cảm thấy tỉnh táo và minh mẫn.\n';
                 } else if(question.includes('sleep') || question.includes('sleepy')) {
                     answer = getTimeSleepCycle();
@@ -126,27 +134,40 @@ login(credential, (err, api) => {
                     let time = timePlan[timePlan.length - 1];
                     let timeSplit = time.split(':');
                     answer = startCronJobSendMessage(api, event.threadID, timeSplit[0], timeSplit[1]);
-                } else if(question.includes('hôm nay thời tiết') ||  
-                        question.includes('thời tiết hôm nay') || 
-                        question.includes('thoi tiet hom nay') ||
-                        question.includes('thời tiết hôm nay thế nào') ||
-                        question.includes('thoi tiet hom nay the nao') || 
-                        question.includes('hôm nay thời tiết như thế nào') ||
-                        question.includes('hom nay thoi tiet nhu the nao')
-                    ) {
-                    answer = await weather.getWeather('Ho Chi Minh');
-                } else if(question.includes('thời tiết') || question.includes('thoi tiet')) {
-                    let city = question.replace('/bot thoi tiet','');
-                    city = city.replace('/bot thời tiết','');
+                } else if(question.includes('xem thời tiết') || question.includes('xem thoi tiet')) {
+                    let city = question.replace('/bot xem thoi tiet','');
+                    city = city.replace('/bot xem thời tiết','');
                     if(city === '') {
                         answer = await weather.getWeather('Ho Chi Minh');
                     } else {
                         answer = await weather.getWeather(city.trim());
                     }
+                } 
+                 else if(
+                    question.includes('thời') ||
+                    question.includes('tiết') ||
+                    question.includes('thoi') ||
+                    question.includes('tiet')
+                ) {
+                    answer = await weather.getWeather('Ho Chi Minh');
                 } else if(question.includes('phòng ai hiền nhất')) {
                     answer = 'A Sơn chứ ai.';
-                }
-                else {
+                } else if(
+                    question.includes('nay ngày nhiêu') || 
+                    question.includes('ngày bao nhiêu') || 
+                    question.includes('nay ngày') ||
+                    question.includes('ngày nhiêu')
+                    ) {
+                    const date = new Date();
+                    answer = `Hôm nay là ngày ${date.getDay()}/${date.getMonth() + 1}/${date.getFullYear()}`;
+                } else if(
+                    question.includes('mấy giờ') || 
+                    question.includes('bây giờ là mấy giờ')) {
+                    const date = new Date();
+                    answer = `Bây giờ là ${date.getHours()}:${date.getMinutes()}`;
+                } else if(question.includes('cùi bắp')) {
+                    answer = `Dỗi luôn...`;
+                } else {
                     answer = 'Không hiểu câu lệnh. Sử dụng /bot help để xem lệnh bot có thể hỗ trợ.';
                 }
                 api.sendMessage(answer, event.threadID);

@@ -5,19 +5,32 @@ const planService = new PlanService();
 class Plans {
     constructor() {
     }
-    async getPlan() {
+    async getPlan(type) {
         try {
             await connectDB();
             const date = new Date();
+            const yesterday = `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate() - 1}`;
             const today = `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`;
+            const tomorrow = `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate() + 1}`;
+            let day = today;
+            let nameDay = 'Hôm nay';
+            if(type === 'yesterday') {
+                nameDay = 'Hôm qua';
+                day = yesterday;
+            } else if(type === 'tomorrow') {
+                nameDay = 'Ngày mai';
+                day = tomorrow;
+            }
             const plan = await planService.getPlan();
             let name = '';
             plan.map(item => {
-                if (item.date === today) {
+                console.log(item.date);
+                console.log(day);
+                if (item.date === day) {
                     name = item.name;
                 }
             });
-            return name = '' ? `Hôm nay không có lịch đổ rác.` : `Hôm nay ${name} sẽ đổ rác nhé.`;
+            return name ? `${nameDay} ${name} sẽ đổ rác.` :  `${nameDay} không có ai đổ rác.`;
         } catch (err) {
             console.error('Login or send message error', err);
         }
