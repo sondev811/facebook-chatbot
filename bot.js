@@ -46,16 +46,14 @@ const formatAMPM = (time) => {
 let cronJob = null;
 const startCronJobSendMessage = (api, threadID, hour, minutes) => {
     if(cronJob) {
-        cronJob.destroy();
+        cronJob.stop();
     }
     const timeStart = `0 ${minutes} ${hour} * * *`;
     // 0 * /5 * * * * every 5m
     cronJob = cron.schedule(timeStart, async() => {
         console.log('checking plan')
         const message = await plans.getPlanCron();
-        console.log(message);
         if(message) {
-            console.log(message);
             api.sendMessage(message, threadID);
         }
     });
@@ -94,6 +92,8 @@ login(credential, (err, api) => {
                     question.includes('thank you')
                 ) {
                     answer = 'Oke. Không có gì.';
+                } else if(question.includes('helpadvance')) {
+                    answer += 'Chat bot tự động trả lời. Đây là các lệnh mà tôi hỗ trợ nâng cao: cài đặt thông báo, update plans, reset plans.';
                 } else if(question.includes('help')) {
                     answer += '----- Room 1c ----- \n';
                     answer += 'Chat bot tự động trả lời. Đây là các lệnh mà tôi hỗ trợ: \n';
