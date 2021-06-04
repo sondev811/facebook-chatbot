@@ -8,7 +8,8 @@
   },
   "main": "bot.js",
   "scripts": {
-    "start": "node bot"
+    "start": "node bot",
+    "postinstall": "opencollective-postinstall || exit 0"
   },
   "author": "",
   "license": "ISC",
