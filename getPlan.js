@@ -24,13 +24,11 @@ class Plans {
             const plan = await planService.getPlan();
             let name = '';
             plan.map(item => {
-                console.log(item.date);
-                console.log(day);
                 if (item.date === day) {
                     name = item.name;
                 }
             });
-            return name ? `${nameDay} ${name} sẽ đổ rác.` :  `${nameDay} không có ai đổ rác.`;
+            return name ? `${nameDay} ${name} sẽ đổ rác + quét nhà.` :  `${nameDay} không có ai đổ rác.`;
         } catch (err) {
             console.error('Login or send message error', err);
         }
@@ -45,7 +43,7 @@ class Plans {
             let message = '';
             plan.map(item => {
                 if (item.date === today) {
-                    message = `Thông báo lịch đổ rác: Hôm nay ${item.name} sẽ đổ rác nhé.`;
+                    message = `Thông báo lịch đổ rác: Hôm nay ${item.name} sẽ đổ rác + quét nhà nhé.`;
                 }
             });
             return message;

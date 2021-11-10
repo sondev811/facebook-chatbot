@@ -8,17 +8,14 @@ const { find } = require("./models/Members.model");
 const app = express();
 app.use(express.json({ extended: false }));
 const day = 31;
-const b = 14;
 
 const member = new Member();
 const userInit = [
-    { memberName: "Tuệ", date: 2, tagId: '100004271522212' },
-    { memberName: "Huyền", date: 4, tagId: '100008293159860' },
-    { memberName: "Kim Anh", date: 6, tagId: '100009048649001' },
-    { memberName: "Anh", date: 8, tagId: '100025238034029' },
-    { memberName: "Sơn", date: 10, tagId: '100004369663896' },
-    { memberName: "Cường", date: 12, tagId: '100007535357078' },
-    { memberName: "Quỳnh", date: 14, tagId: '100009188398529' },
+    { memberName: "Cường", date: 1, tagId: '100007535357078' },
+    { memberName: "Hào", date: 2, tagId: '100004271522212' },
+    { memberName: "Sơn", date: 3, tagId: '100004369663896' },
+    { memberName: "Lương", date: 4, tagId: '100009188398529' },
+    { memberName: "Huyền", date: 5, tagId: '100008293159860' },
 ];
 
 class Calc {
@@ -42,24 +39,21 @@ class Calc {
     }
 
     mergeMember(day, arr) {
-        const result = arr.find((item) => day === item.date || day === item.date + b) // b is date of total member
+        const result = arr.find((item) => day === item.date || day === item.date + 5 || day === item.date + 10 || day === item.date + 15 || day === item.date + 20 || day === item.date + 25 )
         return result;
     };
 
     calcDay(arr) {
         const data = [];
         for (let i = 1; i <= day; i++) {
-            if (i % 2 === 0) {
-                if(this.mergeMember(i, arr) && this.mergeMember(i, arr).memberName) {
-                    data.push({
-                        name: this.mergeMember(i, arr).memberName ? this.mergeMember(i, arr).memberName : null,
-                        date: i,
-                        tagId: this.mergeMember(i, arr).tagId
-                    });
-                }
+            if(this.mergeMember(i, arr) && this.mergeMember(i, arr).memberName) {
+                data.push({
+                    name: this.mergeMember(i, arr).memberName ? this.mergeMember(i, arr).memberName : null,
+                    date: i,
+                    tagId: this.mergeMember(i, arr).tagId
+                });
             }
         }
-
         return data;
     };
 
@@ -77,9 +71,9 @@ class Calc {
         arrSorted.length--;
         arrSorted.forEach((item, index) => {
             if (index === 0) {
-                item.date = 2;
+                item.date = 1;
             } else {
-                item.date += 2;
+                item.date += 1;
             }
         });
         return arrSorted;
@@ -114,7 +108,6 @@ class Calc {
             const date = `${currenYear}-${currenMonth}-${item.date}`;
             handleData.push({ name: item.name, date, tagId: item.tagId });
         });
-        handleData.push({ name: handleData[0].name, date: `${currenYear}-${currenMonth}-30`, tagId: handleData[0].tagId }); // add fisrt plan to last day of month
         handleData.map(item => {
             let planModel = new plan(item);
             planModel.save((error, item) => {
@@ -150,5 +143,3 @@ class Calc {
 
 module.exports = Calc;
 
-// calc.init(); //run every first day of month
-// // calc.initData();
